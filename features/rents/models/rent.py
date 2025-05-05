@@ -17,10 +17,12 @@ class RentDB(Base):
 
     book = relationship("Book", back_populates = "rents")
     reader = relationship("ReaderDB", back_populates = "rents")
-    def __init__(self, takenDate: Date, expiredDate: Date, rentStatus: str, id: Optional[int] = None):
+    def __init__(self, takenDate: Date, expiredDate: Date, rentStatus: str, bookId: int, readerId: int, id: Optional[int] = None):
         super().__init__()
         self.takenDate = takenDate
         self.expiredDate = expiredDate
         self.rentStatus = rentStatus
+        self.bookId = bookId
+        self.readerId = readerId
         if id is not None:
             self.id = id

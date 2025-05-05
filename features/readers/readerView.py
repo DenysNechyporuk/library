@@ -34,7 +34,7 @@ class ReaderPage(tk.Frame):
         reads = session.query(ReaderDB).all()
         session.close()
         data = [
-            [reader.id, reader.pib, reader.phonenumber, reader.liveaddress]
+            [reader.id, reader.fullname, reader.phonenumber, reader.liveaddress]
             for reader in reads
         ]
         self.sheet.set_sheet_data(data)
@@ -97,7 +97,7 @@ class ReaderPage(tk.Frame):
         reads = session.query(ReaderDB).all()
         session.close()
         data = [
-            [reader.id, reader.pib, reader.phonenumber, reader.liveaddress]
+            [reader.id, reader.fullname, reader.phonenumber, reader.liveaddress]
             for reader in reads
         ]
         self.sheet.set_sheet_data(data)
@@ -109,12 +109,12 @@ class ReaderPage(tk.Frame):
         Session = sessionmaker(bind=engine)
         session = Session()
         reads = session.query(ReaderDB).filter(or_(
-        ReaderDB.pib.contains(search_term),
+        ReaderDB.fullname.contains(search_term),
         ReaderDB.phonenumber.contains(search_term),
         ReaderDB.liveaddress.contains(search_term))).all()
 
         searchdata = [
-            [reader.id, reader.pib, reader.phonenumber, reader.liveaddress]
+            [reader.id, reader.fullname, reader.phonenumber, reader.liveaddress]
             for reader in reads]
         session.close()
         self.set_column_widths() 
@@ -171,7 +171,7 @@ class ReaderPage(tk.Frame):
         Session = sessionmaker(bind=engine)
         session = Session()
         editedbook = session.query(ReaderDB).filter_by(id = book_id).first()
-        editedbook.pib = window.pibentry.get()
+        editedbook.fullname = window.pibentry.get()
         editedbook.phonenumber = window.phoneentry.get()
         editedbook.liveaddress = window.addressentry.get()
         session.commit()
@@ -203,7 +203,7 @@ class ReaderPage(tk.Frame):
         editwindow.phoneentry = tk.Entry(editwindow)
         editwindow.addressentry = tk.Entry(editwindow)
 
-        editwindow.pibentry.insert(0, editting.pib)
+        editwindow.pibentry.insert(0, editting.fullname)
         editwindow.phoneentry.insert(0, editting.phonenumber)
         editwindow.addressentry.insert(0, editting.liveaddress)
     

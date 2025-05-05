@@ -7,14 +7,14 @@ class ReaderDB(Base):
     __tablename__ = 'readers'
     
     id = Column(Integer, primary_key=True)
-    pib = Column(String(100), nullable=False)
+    fullname = Column(String(100), nullable=False)
     phonenumber = Column(String(50), nullable=False)
     liveaddress = Column(String(50), nullable=False)
 
     rents = relationship("RentDB", back_populates = "reader")
-    def __init__(self, pib: str, phonenumber: str, liveaddress: str, id: Optional[int] = None):
+    def __init__(self, fullname: str, phonenumber: str, liveaddress: str, id: Optional[int] = None):
         super().__init__()
-        self.pib = pib
+        self.fullname = fullname
         self.phonenumber = phonenumber
         self.liveaddress = liveaddress
         if id is not None:

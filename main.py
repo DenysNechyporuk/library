@@ -2,7 +2,7 @@ from routesapp import RouterApp
 from database import init_db
 
 def main():
-    init_db()  # Створює всі таблиці перед запуском додатка
+    init_db() 
     app = RouterApp()
     app.mainloop()
 
