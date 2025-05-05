@@ -13,13 +13,10 @@ class GeneralMenu(tk.Frame):
         main_container.grid(row=1, column=0, sticky="news", pady=170)
         
 
-        tk.Button(main_container, text="Книги", width=20, height=5,
-                command=lambda: router.switch_frame("BooksPage")).grid(row=0, column=0, padx=10, pady=10)
-        tk.Button(main_container, text="Читачі", width=20, height=5).grid(row=0, column=1, padx=10, pady=10)
-        
-
-        tk.Button(main_container, text="Оренда книг", width=20, height=5).grid(row=1, column=0, padx=10, pady=10)
-        tk.Button(main_container, text="Вихід", width=20, height=5).grid(row=1, column=1, padx=10, pady=10)
+        tk.Button(main_container, text="Книги", width=20, height=5,command=lambda: router.switch_frame("BooksPage")).grid(row=0, column=0, padx=10, pady=10)
+        tk.Button(main_container, text="Читачі", width=20, height=5, command=lambda: router.switch_frame("ReaderPage")).grid(row=0, column=1, padx=10, pady=10)
+        tk.Button(main_container, text="Оренда книг", width=20, height=5, command=lambda: router.switch_frame("RentPage")).grid(row=1, column=0, padx=10, pady=10)
+        tk.Button(main_container, text="Вихід", width=20, height=5, command=lambda: router.switch_frame("LoginPage")).grid(row=1, column=1, padx=10, pady=10)
 
 class LibrarianMenu(GeneralMenu):
     def __init__(self, parent):

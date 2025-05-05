@@ -1,20 +1,19 @@
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float
-from sqlalchemy.orm import declarative_base, sessionmaker, validates
+from sqlalchemy.orm import declarative_base, sessionmaker, validates, relationship
 from datetime import datetime
 from typing import Optional
-
-Base = declarative_base()
+from database import Base
 
 class Book(Base):
     __tablename__ = 'books'
     
     id = Column(Integer, primary_key=True)
-    title = Column(String(100), nullable=False)
+    title = Column(String(100), nullable=False, unique=True)
     author = Column(String(50), nullable=False)
-    genre = Column(String(30))
-    year = Column(Integer)
-    count = Column(Integer)
-    
+    genre = Column(String(30), nullable=False)
+    year = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    rents = relationship("RentDB", back_populates="book")
     def __init__(self, title: str, author: str, genre: str, year: int, quantity: int, id: Optional[int] = None):
         super().__init__()
         self.title = title

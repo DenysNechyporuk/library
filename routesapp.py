@@ -1,6 +1,8 @@
 import tkinter as tk
 from features import login, menu
 from features.books.booksView import booksView
+from features.rents.bookRentView import RentPage
+from features.readers.readerView import ReaderPage
 
 class RouterApp(tk.Tk):
     def __init__(self):
@@ -16,7 +18,9 @@ class RouterApp(tk.Tk):
             "LoginPage": login.LoginPage,
             "LibrarianMenu": menu.LibrarianMenu,
             "AdminMenu": menu.AdminMenu,
-            "BooksPage": booksView.BooksPage
+            "BooksPage": booksView.BooksPage,
+            "RentPage" : RentPage,
+            "ReaderPage" : ReaderPage
         }
         
         frame_class = frame_classes.get(frame_class_name)

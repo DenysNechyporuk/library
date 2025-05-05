@@ -1,3 +1,4 @@
+from sqlite3 import IntegrityError
 import tkinter as tk
 import tksheet
 from tkinter import messagebox
@@ -177,38 +178,21 @@ class BooksPage(tk.Frame):
             
         except ValueError as e:
             messagebox.showerror("Помилка", f"Невірний формат даних: {e}\nБудь ласка, перевірте числові поля (рік, кількість).")
+
+        except IntegrityError as e:
+            if "UNIQUE constraint failed" in str(e.orig):
+                messagebox.showerror("Помилка", "Запис з таким унікальним полем уже існує (наприклад, назва книги).")
+            else:
+                messagebox.showerror("Помилка бази даних", f"Виникла помилка цілісності: {e}")
         except Exception as e:
-            messagebox.showerror("Помилка", f"Не вдалося додати книгу: {e}")
+            if "UNIQUE constraint failed" in str(e.orig):
+                messagebox.showerror("Помилка", "Запис з таким унікальним полем уже існує (наприклад, назва книги).")
+            else:
+                messagebox.showerror("Помилка", f"Не вдалося додати книгу: {e}")
         finally:
             if 'session' in locals():
                 session.close()
         
-    def save_book(self, window):
-        try:
-            
-            Session = sessionmaker(bind=engine)
-            session = Session()
-            new_book = Book(
-                window.nameentry.get(),
-                window.authorentry.get(),
-                window.genreentry.get(),
-                int(window.yearentry.get()),
-                int(window.quantityentry.get())
-            )
-            session.add(new_book)
-            session.commit()
-            
-            self.refresh_table()
-            window.destroy()
-            
-        except ValueError as e:
-            messagebox.showerror("Помилка", f"Невірний формат даних: {e}\nБудь ласка, перевірте числові поля (рік, кількість).")
-        except Exception as e:
-            messagebox.showerror("Помилка", f"Не вдалося додати книгу: {e}")
-        finally:
-            if 'session' in locals():
-                session.close()
-    
     def update_edit_data(self, book_id, window):
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -222,6 +206,7 @@ class BooksPage(tk.Frame):
         print(window.quantityentry.get())
         session.commit()
         session.close()
+        self.set_column_widths()
         self.refresh_table()
         window.destroy()
 
