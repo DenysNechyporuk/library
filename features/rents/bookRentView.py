@@ -47,7 +47,7 @@ class RentPage(tk.Frame):
         rents = session.query(RentDB).join(Book).join(ReaderDB).all()
         
         data = [
-            [rent.id, rent.book.title, rent.reader.fullname, rent.takenDate, rent.expiredDate, rent.rentStatus]
+            [rent.id, rent.book.title, rent.reader.fullname, rent.takenDate, rent.expiredDate, self.localizestatus(rent.rentStatus)]
             for rent in rents
         ]
         session.close()
@@ -112,6 +112,14 @@ class RentPage(tk.Frame):
         session.close()
         self.refresh_table()
 
+    def localizestatus(self, rentStatus):
+        match rentStatus:
+            case BookStatus.RETURNED.value:
+                return 'Повернено'
+            case BookStatus.EXPIRED.value:
+                return 'Протерміновано'
+            case BookStatus.TAKEN.value:
+                return 'Взято'
 
 
 
@@ -124,7 +132,7 @@ class RentPage(tk.Frame):
         ReaderDB.fullname.contains(search_term))).all()
 
         searchdata = [
-            [rent.id, rent.book.title, rent.reader.fullname, rent.takenDate, rent.expiredDate, rent.rentStatus]
+            [rent.id, rent.book.title, rent.reader.fullname, rent.takenDate, rent.expiredDate, self.localizestatus(rent.rentStatus)]
             for rent in rents
         ]
         session.close()
@@ -240,7 +248,7 @@ class RentPage(tk.Frame):
 
         rents = session.query(RentDB).join(Book).join(ReaderDB).all()
         data = [
-            [rent.id, rent.book.title, rent.reader.fullname, rent.takenDate, rent.expiredDate, rent.rentStatus]
+            [rent.id, rent.book.title, rent.reader.fullname, rent.takenDate, rent.expiredDate, self.localizestatus(rent.rentStatus)]
             for rent in rents
         ]
 
