@@ -202,8 +202,6 @@ class BooksPage(tk.Frame):
         editedbook.genre = window.genreentry.get()
         editedbook.year = int(window.yearentry.get())
         editedbook.count = window.quantityentry.get()
-        print(editedbook.count)
-        print(window.quantityentry.get())
         session.commit()
         session.close()
         self.set_column_widths()

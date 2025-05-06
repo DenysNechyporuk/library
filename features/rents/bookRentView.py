@@ -23,7 +23,7 @@ class RentPage(tk.Frame):
     def __init__(self, router):
         tk.Frame.__init__(self, router)
         self.takenDate = None
-        self.expiredDate = None
+        self.expired__Date = None
 
         search_frame = tk.Frame(self)
         search_frame.pack(fill=tk.X, padx=10, pady=10)
@@ -80,8 +80,11 @@ class RentPage(tk.Frame):
         add_btn = tk.Button(btn_frame, text="Додати ренту", command=self.rent_window_show)
         add_btn.pack(side=tk.LEFT, padx=5)
         
-        edit_btn = tk.Button(btn_frame, text="Редагувати")
+        edit_btn = tk.Button(btn_frame, text="Редагувати", command = self.show_edit_rent)
         edit_btn.pack(side=tk.LEFT, padx=5)
+
+        delete_btn = tk.Button(btn_frame, text="Книгу повернуто", command = self.changestatus)
+        delete_btn.pack(side=tk.LEFT, padx=5)
         
         back_btn = tk.Button(btn_frame, text="Повернутися", command=lambda: router.switch_frame("LibrarianMenu"))
         back_btn.pack(side=tk.RIGHT)
@@ -89,6 +92,28 @@ class RentPage(tk.Frame):
     def resetsearch(self):
         self.search_entry.delete(0, 'end')
         self.refresh_table()
+
+
+
+
+    def changestatus(self):
+        selected_rows = self.sheet.get_selected_rows() 
+
+        row_idx = next(iter(selected_rows)) 
+        
+        row_data = self.sheet.get_row_data(row_idx)  
+        Session = sessionmaker(bind=engine)
+        session = Session() 
+        
+        rent_id = row_data[0] 
+        changing = session.query(RentDB).filter_by(id = rent_id).first()
+        changing.rentStatus = BookStatus.RETURNED.value
+        session.commit()
+        session.close()
+        self.refresh_table()
+
+
+
 
     def search_rents(self):
         search_term = self.search_entry.get()
@@ -105,7 +130,11 @@ class RentPage(tk.Frame):
         session.close()
         self.sheet.set_sheet_data(searchdata)
         self.set_column_widths()   
-    
+        
+
+
+
+
     def set_column_widths(self):
         widths = {
             0: 50,   # ID
@@ -117,8 +146,11 @@ class RentPage(tk.Frame):
         }
         
         for col, width in widths.items():
-            self.sheet.column_width(col, width=width)
-    
+            self.sheet.column_width(col, width=width)   
+
+
+
+
 
     def rent_window_show(self):
         
@@ -156,8 +188,8 @@ class RentPage(tk.Frame):
             calwindow.geometry("400x400")
             calwindow.title('Коли повернути')
             def get_calendar_data_till():
-                self.expiredDate = cal.get_date()
-                datatilllabel = tk.Label(rentWindow, text= self.expiredDate)
+                self.expired__Date = cal.get_date()
+                datatilllabel = tk.Label(rentWindow, text= self.expired__Date)
                 datatilllabel.grid(row=3, column=2, sticky="e", padx=5, pady=5)
                 calwindow.destroy()
             cal = Calendar(calwindow)
@@ -198,7 +230,10 @@ class RentPage(tk.Frame):
         
         tk.Button(rentWindow, text="Відмінити", command=rentWindow.destroy).grid(row=6, column=2, sticky="w", pady=10, padx=5)
 
-    
+
+
+
+
     def refresh_table(self):
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -215,10 +250,14 @@ class RentPage(tk.Frame):
         self.set_column_widths()
 
 
+
+
+
     def save_rent(self, window):
+
         try:
             taken_date = datetime.strptime(self.takenDate, f'%m/%d/%y').date()
-            expired_date = datetime.strptime(self.expiredDate, f'%m/%d/%y').date()
+            expired_date = datetime.strptime(self.expired__Date, f'%m/%d/%y').date()
             
             book_title = window.book_choice_var.get()
             book_id = self.books_dict[book_title]  
@@ -250,3 +289,64 @@ class RentPage(tk.Frame):
         finally:
             if 'session' in locals():
                 session.close()
+
+
+
+
+
+    def update_edit_data(self, rent_id, window):
+        expired = datetime.strptime(self.expired__Date, '%m/%d/%y').date()
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        editedrent = session.query(RentDB).filter_by(id = rent_id).first()
+        editedrent.expiredDate = expired
+        session.commit()
+        session.close()
+        self.set_column_widths()
+        self.refresh_table()
+        window.destroy()
+
+
+
+
+
+    def show_edit_rent(self):
+        selected_rows = self.sheet.get_selected_rows() 
+
+        row_idx = next(iter(selected_rows)) 
+        
+        row_data = self.sheet.get_row_data(row_idx)  
+        Session = sessionmaker(bind=engine)
+        session = Session() 
+        
+        rent_id = row_data[0] 
+        editting = session.query(RentDB).filter_by(id = rent_id).first()
+        session.close()
+        if not editting:
+            messagebox.showerror("Помилка", f"Не вдалося знайти ренту")
+            return
+        def show_edit_calendar():
+            calwindow = tk.Toplevel(editwindow)
+            calwindow.geometry("400x400")
+            calwindow.title('Коли повернути')
+            def get_calendar_data_till():
+                self.expired__Date = cal.get_date()
+                datatilllabel = tk.Label(editwindow, text= self.expired__Date)
+                datatilllabel.grid(row=0, column=2, sticky="e", padx=5, pady=5)
+                calwindow.destroy()
+            cal = Calendar(calwindow)
+            cal.pack()
+            getdata = tk.Button(calwindow, text = "Обрати", command = lambda: get_calendar_data_till())
+            getdata.pack()
+        editwindow = tk.Toplevel()
+        editwindow.title("Редагування ренти")
+        editwindow.geometry("500x350")
+        editwindow.expiredlabel = tk.Label(editwindow, text="Коли повернути").grid(row=0,column=0,sticky="e", padx=5, pady=5)
+        editwindow.expiredentry = tk.Button(editwindow, text="Вибрати дату" ,command = show_edit_calendar)
+        editwindow.expiredentry.grid(row=0, column=1, sticky="e", padx=5, pady=5)
+        
+        tk.Button(editwindow, text="Зберегти", command=lambda: self.update_edit_data(rent_id, editwindow)).grid(row=1, column=2, sticky="e", pady=10)
+        
+        tk.Button(editwindow,  text="Відмінити", command=editwindow.destroy).grid(row=2, column=2, sticky="e", padx=5, pady=5)
+    
+
