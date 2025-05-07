@@ -353,7 +353,7 @@ class RentPage(tk.Frame):
             def get_calendar_data_till():
                 self.expired__Date = cal.get_date()
                 datatilllabel = tk.Label(editwindow, text= self.expired__Date)
-                datatilllabel.grid(row=0, column=2, sticky="e", padx=5, pady=5)
+                datatilllabel.grid(row=1, column=1, sticky="e", pady=2)
                 calwindow.destroy()
             cal = Calendar(calwindow)
             cal.pack()
@@ -366,8 +366,8 @@ class RentPage(tk.Frame):
         editwindow.expiredentry = tk.Button(editwindow, text="Вибрати дату" ,command = show_edit_calendar)
         editwindow.expiredentry.grid(row=0, column=1, sticky="e", padx=5, pady=5)
         
-        tk.Button(editwindow, text="Зберегти", command=lambda: self.update_edit_data(rent_id, editwindow)).grid(row=1, column=2, sticky="e", pady=10)
+        tk.Button(editwindow, text="Зберегти", command=lambda: self.update_edit_data(rent_id, editwindow)).grid(row=0, column=2, sticky="e", pady=5)
         
-        tk.Button(editwindow,  text="Відмінити", command=editwindow.destroy).grid(row=2, column=2, sticky="e", padx=5, pady=5)
+        tk.Button(editwindow,  text="Відмінити", command=editwindow.destroy).grid(row=0, column=3, sticky="e", padx=5, pady=5)
     
 
