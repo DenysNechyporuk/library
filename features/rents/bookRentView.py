@@ -3,8 +3,9 @@ from tkinter import ttk
 import tksheet
 from tkinter import Variable, messagebox
 from sqlalchemy.orm import sessionmaker
-from features.books.models.books import Book
 from sqlalchemy import create_engine, Column, Integer, String, or_
+from sqlalchemy.exc import NoResultFound
+from features.books.models.books import Book
 from features.readers.models.reader import ReaderDB
 from tkcalendar import *
 from datetime import datetime
@@ -100,17 +101,31 @@ class RentPage(tk.Frame):
         selected_rows = self.sheet.get_selected_rows() 
 
         row_idx = next(iter(selected_rows)) 
-        
         row_data = self.sheet.get_row_data(row_idx)  
+
         Session = sessionmaker(bind=engine)
         session = Session() 
-        
-        rent_id = row_data[0] 
-        changing = session.query(RentDB).filter_by(id = rent_id).first()
-        changing.rentStatus = BookStatus.RETURNED.value
-        session.commit()
-        session.close()
-        self.refresh_table()
+
+        try:
+            rent_id = row_data[0] 
+            rent = session.query(RentDB).filter_by(id=rent_id).first()
+
+            if rent:
+                if rent.rentStatus != BookStatus.RETURNED.value:
+                    rent.rentStatus = BookStatus.RETURNED.value
+
+                    book = session.query(Book).filter_by(id=rent.bookId).first()
+                    if book:
+                        book.count += 1
+
+                    session.commit()
+                else:
+                    messagebox.showinfo("Інформація", "Статус вже встановлено як 'Повернено'.")
+            else:
+                messagebox.showerror("Помилка", "Ренту не знайдено.")
+        finally:
+            session.close()
+            self.refresh_table()
 
     def localizestatus(self, rentStatus):
         match rentStatus:
@@ -262,45 +277,43 @@ class RentPage(tk.Frame):
 
 
     def save_rent(self, window):
+        taken_date = datetime.strptime(self.takenDate, f'%m/%d/%y').date()
+        expired_date = datetime.strptime(self.expired__Date, f'%m/%d/%y').date()
+
+        book_title = window.book_choice_var.get()
+        book_id = self.books_dict[book_title]
+
+        reader_name = window.reader_choice_var.get()
+        reader_id = self.readers_dict[reader_name]
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
         try:
-            taken_date = datetime.strptime(self.takenDate, f'%m/%d/%y').date()
-            expired_date = datetime.strptime(self.expired__Date, f'%m/%d/%y').date()
+            book = session.query(Book).filter_by(id=book_id).one()
             
-            book_title = window.book_choice_var.get()
-            book_id = self.books_dict[book_title]  
-            
-            reader_name = window.reader_choice_var.get()
-            reader_id = self.readers_dict[reader_name]  
+            if book.count > 0:
+                new_rent = RentDB(
+                    taken_date,
+                    expired_date,
+                    BookStatus.TAKEN.value,
+                    book_id,
+                    reader_id
+                )
+                session.add(new_rent)
+                book.count -= 1
 
-            Session = sessionmaker(bind=engine)
-            session = Session()
-            
-            new_rent = RentDB(
-                taken_date,
-                expired_date,
-                BookStatus.TAKEN.value,
-                book_id,  
-                reader_id  
-            )
-            
-            session.add(new_rent)
-            session.commit()
-            
-            self.refresh_table()
-            window.destroy()
-            
-        except ValueError as e:
-            messagebox.showerror("Помилка", f"Невірний формат даних: {e}\nБудь ласка, перевірте числові поля (рік, кількість).")
-        except Exception as e:
-            messagebox.showerror("Помилка", f"{e}")
+                session.commit()
+            else:
+                messagebox.showerror("Помилка", "Немає доступних екземплярів цієї книги.")
+
+        except NoResultFound:
+            messagebox.showerror("Помилка", "Книгу не знайдено в базі даних.")
+
         finally:
-            if 'session' in locals():
-                session.close()
-
-
-
-
+            session.close()
+            self.refresh_table()
+            window.destroy()  
 
     def update_edit_data(self, rent_id, window):
         expired = datetime.strptime(self.expired__Date, '%m/%d/%y').date()
